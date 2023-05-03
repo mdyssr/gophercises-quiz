@@ -8,18 +8,33 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 )
 
 func main() {
-	defaultFilePath := "problems.csv"
-	filePath := flag.String("file", defaultFilePath, "Problem file path")
+	filePath := flag.String("file", "problems.csv", "Problem file path")
+	timeDelay := flag.Int("timer", 30, "Quiz timer (in seconds)")
 	flag.Parse()
-	f, err := openCSV(*filePath)
-	defer f.Close()
-	if err != nil {
-		log.Fatal(err)
+
+	if *timeDelay < 1 {
+		fmt.Println("Oopsie! Timer value is lower than 1!")
+		os.Exit(0)
 	}
-	readCSV(f)
+
+	timerCh := make(chan struct{})
+	quizCh := make(chan struct{})
+
+	go quiz(*filePath, quizCh)
+	go timer(*timeDelay, timerCh)
+
+	select {
+	case <-timerCh:
+		fmt.Println()
+		fmt.Println("Time out!")
+	case <-quizCh:
+		fmt.Println("Quiz completed :)")
+	}
+
 }
 
 func openCSV(file string) (*os.File, error) {
@@ -31,7 +46,18 @@ func openCSV(file string) (*os.File, error) {
 	return f, nil
 }
 
-func readCSV(f *os.File) {
+func timer(delay int, ch chan struct{}) {
+	time.Sleep(time.Duration(delay) * time.Second)
+	ch <- struct{}{}
+}
+
+func quiz(filePath string, done chan struct{}) {
+	f, err := openCSV(filePath)
+	defer f.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	csvReader := csv.NewReader(f)
 	scanner := bufio.NewScanner(os.Stdin)
 	var score, total int
@@ -64,4 +90,6 @@ func readCSV(f *os.File) {
 	fmt.Println()
 	fmt.Printf("You scored: %d out of %d!\n", score, total)
 	fmt.Println()
+
+	done <- struct{}{}
 }
