@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+var score, total int
+
 func main() {
 	filePath := flag.String("file", "problems.csv", "Problem file path")
 	timeDelay := flag.Int("timer", 30, "Quiz timer (in seconds)")
@@ -29,12 +31,17 @@ func main() {
 
 	select {
 	case <-timerCh:
-		fmt.Println()
-		fmt.Println("Time out!")
+		fmt.Printf("\n\nTime out!\n")
+		quizOver()
 	case <-quizCh:
-		fmt.Println("Quiz completed :)")
+		fmt.Printf("\nQuiz completed :)\n")
+		quizOver()
 	}
 
+}
+
+func quizOver() {
+	fmt.Printf("You scored: %d out of %d!\n\n", score, total)
 }
 
 func openCSV(file string) (*os.File, error) {
@@ -60,7 +67,6 @@ func quiz(filePath string, done chan struct{}) {
 
 	csvReader := csv.NewReader(f)
 	scanner := bufio.NewScanner(os.Stdin)
-	var score, total int
 	for {
 		rec, err := csvReader.Read()
 		if err == io.EOF {
@@ -87,9 +93,5 @@ func quiz(filePath string, done chan struct{}) {
 			score++
 		}
 	}
-	fmt.Println()
-	fmt.Printf("You scored: %d out of %d!\n", score, total)
-	fmt.Println()
-
 	done <- struct{}{}
 }
