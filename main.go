@@ -81,6 +81,7 @@ func quiz(filePath string, shuffle bool, done chan struct{}) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	total = len(records)
 
 	for i, rec := range records {
