@@ -85,7 +85,7 @@ func quiz(filePath string, shuffle bool, done chan struct{}) {
 
 	for i, rec := range records {
 		problem, solution := rec[0], rec[1]
-		fmt.Printf("Problem #%d %s? ", i+1, problem)
+		fmt.Printf("Problem (%d/%d): %s? ", i+1, total, problem)
 		// read user answer
 		scanner.Scan()
 		err = scanner.Err()
