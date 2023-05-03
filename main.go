@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -9,8 +11,10 @@ import (
 )
 
 func main() {
-	file := "problems.csv"
-	f, err := openCSV(file)
+	defaultFilePath := "problems.csv"
+	filePath := flag.String("file", defaultFilePath, "Problem file path")
+	flag.Parse()
+	f, err := openCSV(*filePath)
 	defer f.Close()
 	if err != nil {
 		log.Fatal(err)
@@ -29,6 +33,8 @@ func openCSV(file string) (*os.File, error) {
 
 func readCSV(f *os.File) {
 	csvReader := csv.NewReader(f)
+	scanner := bufio.NewScanner(os.Stdin)
+	var score, total int
 	for {
 		rec, err := csvReader.Read()
 		if err == io.EOF {
@@ -37,6 +43,25 @@ func readCSV(f *os.File) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("%+v\n", rec)
+		total++
+		problem, solution := rec[0], rec[1]
+		fmt.Printf("Problem #%d %s? ", total, problem)
+		// read user answer
+		scanner.Scan()
+		err = scanner.Err()
+		if err != nil {
+			log.Fatal(err)
+		}
+		answer := scanner.Text()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		if answer == solution {
+			score++
+		}
 	}
+	fmt.Println()
+	fmt.Printf("You scored: %d out of %d!\n", score, total)
+	fmt.Println()
 }
