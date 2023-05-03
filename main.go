@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"time"
@@ -67,15 +66,13 @@ func quiz(filePath string, done chan struct{}) {
 
 	csvReader := csv.NewReader(f)
 	scanner := bufio.NewScanner(os.Stdin)
-	for {
-		rec, err := csvReader.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
-		total++
+	records, err := csvReader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+	total = len(records)
+
+	for _, rec := range records {
 		problem, solution := rec[0], rec[1]
 		fmt.Printf("Problem #%d %s? ", total, problem)
 		// read user answer
