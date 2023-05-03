@@ -1,15 +1,4 @@
-#1 read the csv file
+The solution for Gophercises Quiz game
+[Check out the original exercises here](https://gophercises.com/)
 
-#2 ask for the solution each iteration
-
-#3 add custom file flag
-
-#4 add timer via flag
-
-# update score regardless of timer
-
-# add shuffle
-
-# add trim user answer
-
-# add shuffle flag
+Developed by Muhamamd Yasser @ the 2023
