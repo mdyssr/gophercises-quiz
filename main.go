@@ -6,7 +6,9 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -15,6 +17,7 @@ var score, total int
 func main() {
 	filePath := flag.String("file", "problems.csv", "Problem file path")
 	timeDelay := flag.Int("timer", 30, "Quiz timer (in seconds)")
+	shuffle := flag.Bool("shuffle", false, "Shuffle the problems")
 	flag.Parse()
 
 	if *timeDelay < 1 {
@@ -25,7 +28,7 @@ func main() {
 	timerCh := make(chan struct{})
 	quizCh := make(chan struct{})
 
-	go quiz(*filePath, quizCh)
+	go quiz(*filePath, *shuffle, quizCh)
 	go timer(*timeDelay, timerCh)
 
 	select {
@@ -57,7 +60,7 @@ func timer(delay int, ch chan struct{}) {
 	ch <- struct{}{}
 }
 
-func quiz(filePath string, done chan struct{}) {
+func quiz(filePath string, shuffle bool, done chan struct{}) {
 	f, err := openCSV(filePath)
 	defer f.Close()
 	if err != nil {
@@ -67,6 +70,14 @@ func quiz(filePath string, done chan struct{}) {
 	csvReader := csv.NewReader(f)
 	scanner := bufio.NewScanner(os.Stdin)
 	records, err := csvReader.ReadAll()
+
+	if shuffle {
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(records), func(i, j int) {
+			records[i], records[j] = records[j], records[i]
+		})
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,11 +93,11 @@ func quiz(filePath string, done chan struct{}) {
 			log.Fatal(err)
 		}
 		answer := scanner.Text()
-
+		cleanAnswer := strings.ToLower(strings.TrimSpace(answer))
 		if err != nil {
 			log.Fatal(err)
 		}
-		if answer == solution {
+		if cleanAnswer == solution {
 			score++
 		}
 	}

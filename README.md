@@ -9,3 +9,7 @@
 # update score regardless of timer
 
 # add shuffle
+
+# add trim user answer
+
+# add shuffle flag
